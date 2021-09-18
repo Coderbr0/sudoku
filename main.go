@@ -42,9 +42,9 @@ func main() {
 
 			// below code still needs to check for invalid characters (other than 1~9 or .)
 
-                        if srune[j] != '.' {
-                                number = byte(srune[j] - 48)
-                                grid[gridpos] = number
+			if srune[j] != '.' {
+				number = byte(srune[j] - 48)
+				grid[gridpos] = number
 
 			}
 
@@ -119,13 +119,13 @@ func Checkblock(gridpos byte) bool { // check box for duplicates - gridpos (0~80
 	return result
 }
 
-func Trynum(gridpos byte, numb byte) bool { 	// check if numb can be placed at gridpos (0~80)
-	var result bool = true 			// true = number can be placed at gridpos without conflicts, otherwise false
+func Trynum(gridpos byte, numb byte) bool { // check if numb can be placed at gridpos (0~80)
+	var result bool = true // true = number can be placed at gridpos without conflicts, otherwise false
 
 	grid[gridpos] = numb
 	result = Checkrow(gridpos) && Checkcolumn(gridpos) && Checkblock(gridpos)
 	if result == false {
-		grid[gridpos]=0
+		grid[gridpos] = 0
 	}
 	return result
 }
