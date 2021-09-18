@@ -1,0 +1,70 @@
+package main
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/01-edu/z01"
+)
+
+func popboard() {
+	var board [][]int = make([][]int, 9)
+	for i := range board {
+		board[i] = make([]int, 9)
+	}
+	args := os.Args[1:]
+	for i := 0; i < len(args); i++ {
+		srune := []rune(args[i])
+		for u := 0; u < len(srune); u++ {
+			if srune[u] != '.' {
+				bint := int(srune[u] - 48)
+				board[i][u] = bint
+			}
+		}
+	}
+	fmt.Println("\n+-------+-------+-------+")
+	for row := 0; row < 9; row++ {
+		fmt.Print("| ")
+		for col := 0; col < 9; col++ {
+			if col == 3 || col == 6 {
+				fmt.Print("| ")
+			}
+			fmt.Printf("%v ", board[row][col])
+			if col == 8 {
+				fmt.Print("|")
+			}
+		}
+
+		if row == 2 || row == 5 || row == 8 {
+			fmt.Println("\n+-------+-------+-------+")
+		} else {
+			fmt.Println()
+		}
+	}
+}
+
+func parseInput(input string) [9][9]int {
+	board := [9][9]int{}
+	scanner := bufio.NewScanner(strings.NewReader(input))
+
+	scanner.Split(bufio.ScanRunes)
+
+	for row := 0; row < 9; row++ {
+		for col := 0; col < 9; col++ {
+			scanner.Scan()
+			i1, _ := strconv.Atoi(scanner.Text())
+			board[row][col] = i1
+		}
+	}
+	return board
+}
+
+
+// board = append(board, []rune(str))
+func main() {
+	popboard()
+	parseInput(input string)
+
+
+	z01.PrintRune('\n')
+}
