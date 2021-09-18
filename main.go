@@ -15,9 +15,9 @@ var grid [81]byte
 func main() {
 	var gridpos byte // variable to hold the current position (0~80) in the grid
 
-	arguments := os.Args
-	numarg := len(arguments)
-	if numarg != 10 {
+	args := os.Args[1:]
+	numarg := len(args)
+	if numarg != 9 {
 		fmt.Println("Error")
 		return
 	}
@@ -25,9 +25,9 @@ func main() {
 	// parse each argument (one row) and fill the grid and test if the grid is valid
 
 	gridpos = 0
-	for i := 1; i < numarg; i++ {
-		row := (arguments[i])
-		l := len(row)
+	for i := 0; i < numarg; i++ {
+		srune := []rune(args[i])
+		l := len(srune)
 		if l != 9 {
 			fmt.Println("Error")
 			return
@@ -40,7 +40,13 @@ func main() {
 			// if character is valid, put the number in the corresponding position of the grid
 			// (put 0 in the grid if character is .)
 
-			// insert code
+			// below code still needs to check for invalid characters (other than 1~9 or .)
+
+                        if srune[j] != '.' {
+                                number = byte(srune[j] - 48)
+                                grid[gridpos] = number
+
+			}
 
 			// after putting each number in the grid, call the Trynum function to check if the grid is valid
 			if !Trynum(gridpos, number) {
@@ -58,7 +64,12 @@ func main() {
 
 	// print the grid
 	for gridpos := 0; gridpos < 81; gridpos++ {
-		z01.PrintRune(rune(grid[gridpos] + '0'))
+		num := grid[gridpos]
+		if num == 0 {
+			z01.PrintRune('.')
+		} else {
+			z01.PrintRune(rune(num + '0'))
+		}
 		if (gridpos+1)%9 == 0 {
 			z01.PrintRune('\n')
 		} else {
