@@ -38,14 +38,14 @@ func main() {
 			// check each character in the row if it is between 1~9 or is .
 			// if character is invalid, exit with error
 			// if character is valid, put the number in the corresponding position of the grid
-			// (put 0 in the grid if charcter is .
+			// (put 0 in the grid if character is .)
 
 			// insert code
 
-			// after putting each number in the grid, call the trynum function to check if the grid is valid
+			// after putting each number in the grid, call the Trynum function to check if the grid is valid
 			if !Trynum(gridpos, number) {
-				// fmt.Println ("Error")
-				// return
+				fmt.Println("Error")
+				return
 			}
 			gridpos++
 		}
@@ -54,10 +54,9 @@ func main() {
 	// Now the grid is filled and checked
 	// so we can solve the sudoku puzzle
 
-	// write code here to solve the puzzle
+	// write code here to solve the puzzle using the Trynum function
 
 	// print the grid
-
 	for gridpos := 0; gridpos < 81; gridpos++ {
 		z01.PrintRune(rune(grid[gridpos] + '0'))
 		if (gridpos+1)%9 == 0 {
@@ -71,7 +70,7 @@ func main() {
 // fuctions we need
 
 func Check9(tocheck [9]byte) bool { // check a slice of 9 int for duplicates among 1-9, ignore 0
-	var result bool = false // true = no duplicates,  false = has duplicates
+	var result bool = true // true = no duplicates,  false = has duplicates
 
 	// code to be written
 
@@ -79,7 +78,7 @@ func Check9(tocheck [9]byte) bool { // check a slice of 9 int for duplicates amo
 }
 
 func Checkrow(gridpos byte) bool { // check row for duplicates - gridpos (0~80) passed as argument
-	var result bool = false // true = no duplicates,  false = has duplicates
+	var result bool = true // true = no duplicates,  false = has duplicates
 	var checknums [9]byte
 
 	// code to fill up checknums with the numbers from the row of the griid where the element is
@@ -90,7 +89,7 @@ func Checkrow(gridpos byte) bool { // check row for duplicates - gridpos (0~80) 
 }
 
 func Checkcolumn(gridpos byte) bool { // check column for duplicates - gridpos (0~80) passed as argument
-	var result bool = false // true = no duplicates,  false = has duplicates
+	var result bool = true // true = no duplicates,  false = has duplicates
 	var checknums [9]byte
 
 	// code to fill up checknums with the numbers from the column
@@ -100,7 +99,7 @@ func Checkcolumn(gridpos byte) bool { // check column for duplicates - gridpos (
 }
 
 func Checkblock(gridpos byte) bool { // check box for duplicates - gridpos (0~80)  passed as argument
-	var result bool = false // true = no duplicates,  false = has duplicates
+	var result bool = true // true = no duplicates,  false = has duplicates
 	var checknums [9]byte
 
 	// code to fill up checknums with the numbers from the block
@@ -109,11 +108,13 @@ func Checkblock(gridpos byte) bool { // check box for duplicates - gridpos (0~80
 	return result
 }
 
-func Trynum(gridpos byte, numb byte) bool { // check box for duplicates - gridpos (0~80)  passed as argument
-	var result bool = false // true = number can be placed at gridpos without conflicts, otherwise false
+func Trynum(gridpos byte, numb byte) bool { 	// check if numb can be placed at gridpos (0~80)
+	var result bool = true 			// true = number can be placed at gridpos without conflicts, otherwise false
 
 	grid[gridpos] = numb
 	result = Checkrow(gridpos) && Checkcolumn(gridpos) && Checkblock(gridpos)
-
+	if result == false {
+		grid[gridpos]=0
+	}
 	return result
 }
