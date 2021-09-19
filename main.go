@@ -7,8 +7,8 @@ import (
 )
 
 // Sudoko grid is represented as a slice of 81 bytes
-// 0 means number is unknow
-// grid is a global variable, so it is acceisble by main and all functions
+// 0 means number is unknown
+// grid is a global variable, so it is accesible by main and all functions
 
 var grid [81]byte
 
@@ -17,7 +17,7 @@ func main() {
 
 	args := os.Args[1:]
 	numarg := len(args)
-	if numarg != 9 {
+	if numarg != 9 { // if not 9 args, exit with error
 		fmt.Println("Error")
 		return
 	}
@@ -28,83 +28,83 @@ func main() {
 	for i := 0; i < numarg; i++ {
 		srune := []rune(args[i])
 		l := len(srune)
-		if l != 9 {
+		if l != 9 { // if not 9 characters, exit with error
 			fmt.Println("Error")
 			return
 		}
 		for j := 0; j < l; j++ {
 			var number byte
-			// code to write:
 			// check each character in the row if it is between 1~9 or is .
 			// if character is invalid, exit with error
 			// if character is valid, put the number in the corresponding position of the grid
-			// (put 0 in the grid if character is .)
+			// leave 0 in the grid if character is .)
 
-			// below code still needs to check for invalid characters (other than 1~9 or .)
+			if (srune[j] >= '1' && srune[j] <= '9') || srune[j] == '.' {
+				if srune[j] != '.' {
+					number = byte(srune[j] - 48)
+					grid[gridpos] = number
 
-			if srune[j] != '.' {
-				number = byte(srune[j] - 48)
-				grid[gridpos] = number
-
-			// after putting each number in the grid, call the Trynum function to check if the grid is valid
-				if !Trynum(gridpos, number) {
-					fmt.Println("Error")
-					return
+					// after putting each number in the grid, call the Trynum function to check if the grid is valid
+					if !Trynum(gridpos, number) {
+						fmt.Println("Error")
+						return
+					}
 				}
+				gridpos++
+			} else {
+				fmt.Println("Error")
+				return
 			}
-			gridpos++
 		}
 	}
 
 	// Now the grid is filled and checked
 	// so we can solve the sudoku puzzle
 
-	// code below to solve the puzzle using the Trynext function
-
+	// solve by recursively calling Trynext
 	gridpos = 0
-	if !Trynext (gridpos) {
+	if !Trynext(gridpos) { // if puzzle is unsolvable, exit with error
 		fmt.Println("Error")
 		return
 	}
 
-	// print the grid
+	// puzzle solved, print the grid
 	Printgrid()
 }
 
 // fuctions we need
 
 func Trynext(gridpos byte) bool { // try to fill the next unsolved grid position with numbers from 1~9
-//	var result bool = true // true = next position can be successfully filled or no more available unsolved positions, otherwise false
+	//	var result bool = true // true = next position can be successfully filled or no more available unsolved positions, otherwise false
 
-	var i,j byte
+	var i, j byte
 
-	// find next available grid poition (containing 0) from current position 
-	for i=gridpos; i<81; i++ {
+	// find next available grid poition (containing 0) from current position
+	for i = gridpos; i < 81; i++ {
 		if grid[i] == 0 {
-			for j=1; j<=9; j++ {	// try numbers from 1~9
-				if Trynum(i,j) {		// if number can be placed, try next position
-//					Printgrid()
-//					fmt.Println()
-					result := Trynext(i)	// recurse to try next grid position
+			for j = 1; j <= 9; j++ { // try numbers from 1~9
+				if Trynum(i, j) { // if number can be placed, try next position
+					// for debugging			Printgrid()
+					// to see solving progress		fmt.Println()
+					result := Trynext(i) // recurse to try next grid position
 					if result {
 						return true
 					}
 				}
 			}
-			grid[i]=0
+			grid[i] = 0
 			return false
 		}
 	}
 	return true
 }
 
-
 func Check9(tocheck [9]byte) bool { // check a slice of 9 int for duplicates among 1-9, ignore 0
 	var result bool = true // true = no duplicates,  false = has duplicates
 
 	for i := 0; i < 9; i++ {
-		if tocheck[i] !=0 {
-			for j := i+1; j < 9; j++ {
+		if tocheck[i] != 0 {
+			for j := i + 1; j < 9; j++ {
 				if tocheck[j] == tocheck[i] {
 					result = false
 					break
@@ -119,8 +119,8 @@ func Checkrow(gridpos byte) bool { // check row for duplicates - gridpos (0~80) 
 	var result bool = true // true = no duplicates,  false = has duplicates
 	var checknums [9]byte
 
-	// calculate grid position of left of the row 
-	s := (gridpos/9)*9
+	// calculate grid position of left of the row
+	s := (gridpos / 9) * 9
 
 	// fill up checknums with the numbers from the row
 	for i := 0; i < 9; i++ {
@@ -136,13 +136,13 @@ func Checkcolumn(gridpos byte) bool { // check column for duplicates - gridpos (
 	var result bool = true // true = no duplicates,  false = has duplicates
 	var checknums [9]byte
 
-	// calculate grid position of top of the column 
-	s := gridpos%9
+	// calculate grid position of top of the column
+	s := gridpos % 9
 
 	// fill up checknums with the numbers from the column
 	for i := 0; i < 9; i++ {
 		checknums[i] = grid[s]
-		s = s+9
+		s = s + 9
 	}
 
 	result = Check9(checknums)
@@ -154,19 +154,18 @@ func Checkblock(gridpos byte) bool { // check 9x9 block for duplicates - gridpos
 	var checknums [9]byte
 
 	// calculate grid position of top left hand corner of the block
-	r := (gridpos/27)*27	// row 0 or 3 or 6
-	c := ((gridpos%9)/3)*3	// column 0 or 3 or 6
+	r := (gridpos / 27) * 27     // row 0 or 3 or 6
+	c := ((gridpos % 9) / 3) * 3 // column 0 or 3 or 6
 	s := r + c
 
 	//  fill up checknums with the numbers from the block
 	for i := 0; i < 9; i++ {
 		checknums[i] = grid[s]
 		s++
-		if (i+1)%3 == 0 {	// skip to next row after 3 numbers
-			s = s+6
+		if (i+1)%3 == 0 { // skip to next row after 3 numbers
+			s = s + 6
 		}
 	}
-
 	result = Check9(checknums)
 	return result
 }
@@ -197,5 +196,5 @@ func Printgrid() {
 			z01.PrintRune(' ')
 		}
 	}
-//	z01.PrintRune('\n')
+	//	z01.PrintRune('\n')
 }
