@@ -1,146 +1,201 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"github.com/01-edu/z01"
 	"os"
-	"strconv"
-	"strings"
 )
 
-func main() {
-	board := parseInput(os.Args[1])
+// Sudoko grid is represented as a slice of 81 bytes
+// 0 means number is unknow
+// grid is a global variable, so it is acceisble by main and all functions
 
-	if backtrack(&board) {
-		fmt.Println("The Sudoku was solved successfully:")
-		printBoard(board)
-	} else {
-		fmt.Printf("The Sudoku can't be solved.")
+var grid [81]byte
+
+func main() {
+	var gridpos byte // variable to hold the current position (0~80) in the grid
+
+	args := os.Args[1:]
+	numarg := len(args)
+	if numarg != 9 {
+		fmt.Println("Error")
+		return
 	}
+
+	// parse each argument (one row) and fill the grid and test if the grid is valid
+
+	gridpos = 0
+	for i := 0; i < numarg; i++ {
+		srune := []rune(args[i])
+		l := len(srune)
+		if l != 9 {
+			fmt.Println("Error")
+			return
+		}
+		for j := 0; j < l; j++ {
+			var number byte
+			// code to write:
+			// check each character in the row if it is between 1~9 or is .
+			// if character is invalid, exit with error
+			// if character is valid, put the number in the corresponding position of the grid
+			// (put 0 in the grid if character is .)
+
+			// below code still needs to check for invalid characters (other than 1~9 or .)
+
+			if srune[j] != '.' {
+				number = byte(srune[j] - 48)
+				grid[gridpos] = number
+
+			// after putting each number in the grid, call the Trynum function to check if the grid is valid
+				if !Trynum(gridpos, number) {
+					fmt.Println("Error")
+					return
+				}
+			}
+			gridpos++
+		}
+	}
+
+	// Now the grid is filled and checked
+	// so we can solve the sudoku puzzle
+
+	// code below to solve the puzzle using the Trynext function
+
+	gridpos = 0
+	if !Trynext (gridpos) {
+		fmt.Println("Error")
+		return
+	}
+
+	// print the grid
+	Printgrid()
 }
 
-func backtrack(board *[9][9]int) bool {
-	if !hasEmptyCell(board) {
-		return true
-	}
-	for i := 0; i < 9; i++ {
-		for j := 0; j < 9; j++ {
-			if board[i][j] == 0 {
-				for candidate := 9; candidate >= 1; candidate-- {
-					board[i][j] = candidate
-					if isBoardValid(board) {
-						if backtrack(board) {
-							return true
-						}
-						board[i][j] = 0
-					} else {
-						board[i][j] = 0
+// fuctions we need
+
+func Trynext(gridpos byte) bool { // try to fill the next unsolved grid position with numbers from 1~9
+//	var result bool = true // true = next position can be successfully filled or no more available unsolved positions, otherwise false
+
+	var i,j byte
+
+	// find next available grid poition (containing 0) from current position 
+	for i=gridpos; i<81; i++ {
+		if grid[i] == 0 {
+			for j=1; j<=9; j++ {	// try numbers from 1~9
+				if Trynum(i,j) {		// if number can be placed, try next position
+//					Printgrid()
+//					fmt.Println()
+					result := Trynext(i)	// recurse to try next grid position
+					if result {
+						return true
 					}
 				}
-				return false
 			}
-		}
-	}
-	return false
-}
-
-func hasEmptyCell(board *[9][9]int) bool {
-	for i := 0; i < 9; i++ {
-		for j := 0; j < 9; j++ {
-			if board[i][j] == 0 {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func isBoardValid(board *[9][9]int) bool {
-	// check duplicates by row
-	for row := 0; row < 9; row++ {
-		counter := [10]int{}
-		for col := 0; col < 9; col++ {
-			counter[board[row][col]]++
-		}
-		if hasDuplicates(counter) {
+			grid[i]=0
 			return false
 		}
 	}
-
-	// check duplicates by column
-	for row := 0; row < 9; row++ {
-		counter := [10]int{}
-		for col := 0; col < 9; col++ {
-			counter[board[col][row]]++
-		}
-		if hasDuplicates(counter) {
-			return false
-		}
-	}
-
-	// check 3x3 section
-	for i := 0; i < 9; i += 3 {
-		for j := 0; j < 9; j += 3 {
-			counter := [10]int{}
-			for row := i; row < i+3; row++ {
-				for col := j; col < j+3; col++ {
-					counter[board[row][col]]++
-				}
-				if hasDuplicates(counter) {
-					return false
-				}
-			}
-		}
-	}
-
 	return true
 }
 
-func hasDuplicates(counter [10]int) bool {
-	for i, count := range counter {
-		if i == 0 {
-			continue
-		}
-		if count > 1 {
-			return true
+
+func Check9(tocheck [9]byte) bool { // check a slice of 9 int for duplicates among 1-9, ignore 0
+	var result bool = true // true = no duplicates,  false = has duplicates
+
+	for i := 0; i < 9; i++ {
+		if tocheck[i] !=0 {
+			for j := i+1; j < 9; j++ {
+				if tocheck[j] == tocheck[i] {
+					result = false
+					break
+				}
+			}
 		}
 	}
-	return false
+	return result
 }
 
-func printBoard(board [9][9]int) {
-	fmt.Println("+-------+-------+-------+")
-	for row := 0; row < 9; row++ {
-		fmt.Print("| ")
-		for col := 0; col < 9; col++ {
-			if col == 3 || col == 6 {
-				fmt.Print("| ")
-			}
-			fmt.Printf("%d ", board[row][col])
-			if col == 8 {
-				fmt.Print("|")
-			}
+func Checkrow(gridpos byte) bool { // check row for duplicates - gridpos (0~80) passed as argument
+	var result bool = true // true = no duplicates,  false = has duplicates
+	var checknums [9]byte
+
+	// calculate grid position of left of the row 
+	s := (gridpos/9)*9
+
+	// fill up checknums with the numbers from the row
+	for i := 0; i < 9; i++ {
+		checknums[i] = grid[s]
+		s++
+	}
+
+	result = Check9(checknums)
+	return result
+}
+
+func Checkcolumn(gridpos byte) bool { // check column for duplicates - gridpos (0~80) passed as argument
+	var result bool = true // true = no duplicates,  false = has duplicates
+	var checknums [9]byte
+
+	// calculate grid position of top of the column 
+	s := gridpos%9
+
+	// fill up checknums with the numbers from the column
+	for i := 0; i < 9; i++ {
+		checknums[i] = grid[s]
+		s = s+9
+	}
+
+	result = Check9(checknums)
+	return result
+}
+
+func Checkblock(gridpos byte) bool { // check 9x9 block for duplicates - gridpos (0~80)  passed as argument
+	var result bool = true // true = no duplicates,  false = has duplicates
+	var checknums [9]byte
+
+	// calculate grid position of top left hand corner of the block
+	r := (gridpos/27)*27	// row 0 or 3 or 6
+	c := ((gridpos%9)/3)*3	// column 0 or 3 or 6
+	s := r + c
+
+	//  fill up checknums with the numbers from the block
+	for i := 0; i < 9; i++ {
+		checknums[i] = grid[s]
+		s++
+		if (i+1)%3 == 0 {	// skip to next row after 3 numbers
+			s = s+6
 		}
-		if row == 2 || row == 5 || row == 8 {
-			fmt.Println("\n+-------+-------+-------+")
+	}
+
+	result = Check9(checknums)
+	return result
+}
+
+func Trynum(gridpos byte, numb byte) bool { // check if numb can be placed at gridpos (0~80)
+	var result bool = true // true = number can be placed at gridpos without conflicts, otherwise false
+
+	grid[gridpos] = numb
+	result = Checkrow(gridpos) && Checkcolumn(gridpos) && Checkblock(gridpos)
+	if result == false {
+		grid[gridpos] = 0
+	}
+	return result
+}
+
+func Printgrid() {
+	// print the grid
+	for i := 0; i < 81; i++ {
+		num := grid[i]
+		if num == 0 {
+			z01.PrintRune('.')
 		} else {
-			fmt.Println()
+			z01.PrintRune(rune(num + '0'))
+		}
+		if (i+1)%9 == 0 {
+			z01.PrintRune('\n')
+		} else {
+			z01.PrintRune(' ')
 		}
 	}
-}
-
-func parseInput(input string) [9][9]int {
-	board := [9][9]int{}
-	scanner := bufio.NewScanner(strings.NewReader(input))
-
-	scanner.Split(bufio.ScanRunes)
-
-	for row := 0; row < 9; row++ {
-		for col := 0; col < 9; col++ {
-			scanner.Scan()
-			i1, _ := strconv.Atoi(scanner.Text())
-			board[row][col] = i1
-		}
-	}
-	return board
+//	z01.PrintRune('\n')
 }
